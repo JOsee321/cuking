@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cuking"
+version = "0.1.0"
+description = "Indonesian Natural Language Understanding (NLU) fine-tuning pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Rafi Wildan", email = "rafiwildan257@gmail.com"}
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
