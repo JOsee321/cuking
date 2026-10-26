@@ -1,9 +1,10 @@
-# Additional packages for Kaggle environment (torch, numpy, pandas, scikit-learn are preinstalled)
-transformers==4.46.3
-datasets==3.1.0
-accelerate==1.1.1
-evaluate==0.4.3
+# Pinned packages for Kaggle environment (torch, numpy, pandas, scikit-learn are preinstalled)
+transformers==5.20.2
+datasets==5.1.0
+accelerate==1.15.0
+evaluate==0.4.6
 seqeval==1.2.2
-pyyaml==6.0.2
-huggingface_hub==0.26.2
+sentencepiece>=0.2.0
+pyyaml>=6.0.2
+huggingface_hub>=0.26.0
 pytest>=8.3.0

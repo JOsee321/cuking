@@ -7,8 +7,12 @@ from pathlib import Path
 import shutil
 import time
 from typing import Any, Dict, Optional
+import accelerate
+import datasets
+import evaluate
 import numpy as np
 import torch
+import transformers
 from transformers import (
     DataCollatorWithPadding,
     EarlyStoppingCallback,
@@ -70,6 +74,14 @@ def train_single_run(
     force: bool = False,
 ) -> Dict[str, Any]:
     """Execute a single reproducible training run and persist artifacts."""
+    logger.info(
+        f"Library versions: "
+        f"torch={torch.__version__}, "
+        f"transformers={transformers.__version__}, "
+        f"datasets={datasets.__version__}, "
+        f"accelerate={accelerate.__version__}, "
+        f"evaluate={evaluate.__version__}"
+    )
     task_key = task.lower()
     config = load_merged_config(task_key, config_path)
 
