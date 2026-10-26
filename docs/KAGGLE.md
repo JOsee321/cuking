@@ -133,3 +133,110 @@ FileLink('/kaggle/working/cuking_phase1_results.zip')
    ```bash
    python -m cuking.aggregate
    ```
+
+---
+
+## Phase 2: Large Model Sweep Runbook
+
+**UNDUH ZIP SEBELUM STOP SESSION. File di /kaggle/working hilang saat sesi berhenti.**
+
+Bagian ini memuat panduan lengkap eksekusi hyperparameter sweep Phase 2 untuk model large (`xlmr-large` dan `indobert-large`) pada benchmark EmoT dan SmSA di Kaggle Notebook.
+
+---
+
+### Perkiraan Waktu Eksekusi
+
+Berdasarkan perbandingan waktu eksekusi:
+- **EmoT (Large model)**: sekitar 8 menit per run (total 6 run: ~48 menit). Sebagai perbandingan, model base membutuhkan sekitar 2,5 menit per run.
+- **SmSA (Large model)**: sekitar 30 menit per run (total 6 run: ~180 menit / 3 jam). Sebagai perbandingan, model base membutuhkan sekitar 10 menit per run.
+- **Total waktu sweep**: sekitar 3,5 hingga 4 jam untuk 12 run keseluruhan (jauh di bawah batas sesi Kaggle 12 jam).
+
+---
+
+### Cara Menjalankan di Latar Belakang (Background Commit)
+
+Agar proses sweep tidak terputus saat koneksi internet terputus atau tab browser ditutup, jalankan notebook dalam mode background:
+1. Pastikan konfigurasi notebook:
+   - **Accelerator**: GPU T4 x2 atau GPU P100.
+   - **Internet**: On (aktif).
+2. Notebook harus memuat seluruh sel berurutan dari (a) sampai (g) di bawah ini tanpa error.
+3. Klik tombol **Save Version** di pojok kanan atas notebook.
+4. Pilih opsi **Save & Run All (Commit)**.
+5. Klik **Save**. Notebook akan dijalankan secara independen di server Kaggle di latar belakang.
+6. Anda dapat menutup browser. Sesi background memiliki batas waktu maksimal sekitar 12 jam.
+7. Setelah selesai, buka versi notebook tersebut, masuk ke tab **Output**, dan unduh file `cuking_phase2_results.zip`.
+
+---
+
+### Sel Berurutan untuk Notebook Kaggle Phase 2
+
+#### Sel (a): Atur Lingkungan GPU 0
+```python
+# Sel (a): Pastikan hanya GPU 0 yang dialokasikan
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+print("CUDA_VISIBLE_DEVICES diatur ke: 0")
+```
+
+#### Sel (b): Clone Repositori dan Instalasi Dependensi
+```python
+# Sel (b): Clone repo Cuking dan install dependensi
+!git clone https://github.com/JOsee321/cuking.git
+%cd cuking
+
+!pip install -r requirements-kaggle.txt --quiet
+!pip install -e . --quiet
+```
+
+#### Sel (c): Sel 0 Preflight Check
+```python
+# Sel (c): Preflight verification dan smoke test
+import torch
+import transformers
+import datasets
+import accelerate
+import evaluate
+
+print("=== Preflight Environment Check ===")
+print(f"PyTorch      : {torch.__version__} (CUDA: {torch.cuda.is_available()})")
+if torch.cuda.is_available():
+    print(f"GPU Device   : {torch.cuda.get_device_name(0)}")
+print(f"Transformers : {transformers.__version__}")
+print(f"Datasets     : {datasets.__version__}")
+print(f"Accelerate   : {accelerate.__version__}")
+print(f"Evaluate     : {evaluate.__version__}")
+
+print("\n=== Menjalankan Smoke Test Preflight ===")
+!python -m pytest tests/test_smoke.py -q
+```
+
+#### Sel (d): Eksekusi Sweep EmoT (6 Run)
+```python
+# Sel (d): Jalankan sweep 6 run untuk task EmoT
+# Urutan: xlmr-large (1e-5), indobert-large (3e-5), xlmr-large (2e-5),
+# indobert-large (4e-5), xlmr-large (5e-6), indobert-large (2e-5)
+!bash scripts/run_sweep.sh --tasks emot
+```
+
+#### Sel (e): Eksekusi Sweep SmSA (6 Run)
+```python
+# Sel (e): Jalankan sweep 6 run untuk task SmSA
+# Urutan: xlmr-large (1e-5), indobert-large (3e-5), xlmr-large (2e-5),
+# indobert-large (4e-5), xlmr-large (5e-6), indobert-large (2e-5)
+!bash scripts/run_sweep.sh --tasks smsa
+```
+
+#### Sel (f): Tampilkan Peringkat Metrik Terbaik
+```python
+# Sel (f): Tampilkan leaderboard run per task berdasarkan validation macro-F1
+!python -m cuking.aggregate --top
+```
+
+#### Sel (g): Tautan Unduh Arsip Hasil Parsial / Lengkap
+```python
+# Sel (g): Tampilkan tautan unduh file zip hasil eksperimen
+# Arsip ini diperbarui otomatis setiap kali sebuah run selesai
+from IPython.display import FileLink
+FileLink('/kaggle/working/cuking_phase2_results.zip')
+```
+
