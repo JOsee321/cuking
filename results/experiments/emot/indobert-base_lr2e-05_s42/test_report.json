@@ -1,0 +1,12 @@
+{
+  "task": "emot",
+  "model": "indobert-base",
+  "lr": 2e-05,
+  "seed": 42,
+  "split": "test",
+  "test_macro_f1": 0.7584384183546312,
+  "test_acc": 0.75,
+  "macro_f1": 0.7584384183546312,
+  "accuracy": 0.75,
+  "num_samples": 440
+}

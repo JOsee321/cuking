@@ -1,0 +1,12 @@
+{
+  "task": "smsa",
+  "model": "indobert-base",
+  "lr": 2e-05,
+  "seed": 42,
+  "split": "test",
+  "test_macro_f1": 0.8940551135325482,
+  "test_acc": 0.92,
+  "macro_f1": 0.8940551135325482,
+  "accuracy": 0.92,
+  "num_samples": 500
+}
