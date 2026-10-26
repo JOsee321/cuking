@@ -110,6 +110,19 @@ Setiap keputusan atau penyesuaian dicatat dengan format:
   5. Integritas baris diverifikasi ketat: jumlah baris pada `test_logits.npy` wajib sama persis dengan jumlah baris ground truth test label asli.
 - Dampak: Bebas dari risiko data leakage dan p-hacking, menjaga kepatuhan penuh pada Aturan Agent nomor 6.
 
+### DEC-009: Phase 2 Large Model Sweep Grid and OOM/NaN Guards
+- Tanggal: 2026-10-26
+- Konteks: Penyesuaian grid sweep hyperparameter untuk model large (`xlmr-large` dan `indobert-large`), serta perlindungan stabilitas runtime (OOM fallback dan NaN guard) pada T2.2.
+- Alasan Penyesuaian Grid:
+  1. `xlmr-large`: Model ini sangat rentan mengalami divergen atau loss explosion pada learning rate tinggi. Paper IndoNLU menggunakan learning rate 1e-5 untuk XLM-R large. Oleh karena itu, grid learning rate disesuaikan menjadi: `5e-6, 1e-5, 2e-5`.
+  2. `indobert-large`: Paper IndoNLU (Tabel 21 dan 22) menggunakan learning rate 3e-5 hingga 4e-5 untuk IndoBERT large. Grid learning rate disesuaikan menjadi: `2e-5, 3e-5, 4e-5`.
+  3. Konfigurasi umum: Seed 42, `warmup_ratio=0.1`, effective batch size 16 (default per_device 8 x accumulation 2, dengan fallback otomatis ke 4 x 4 bila terjadi CUDA Out of Memory).
+- Keputusan Teknis:
+  1. Menambahkan `NaNGuardCallback` untuk menghentikan training segera jika loss bernilai NaN atau Inf, menulis `failed.json` di folder run, dan tidak menulis `metrics.json`.
+  2. Menambahkan penanganan `OutOfMemoryError` dengan pembersihan memori CUDA dan pengulangan satu kali dengan batch 4 dan accumulation 4, mencatat `"oom_fallback": true` di `metrics.json`.
+- Dampak: Eksekusi sweep model large menjadi stabil dan hemat waktu komputasi GPU Kaggle.
+
+
 
 
 
