@@ -64,3 +64,39 @@ def test_masked_test_splits():
 
     smsa_masked = load_task("smsa", data_dir="data", use_masked_test=True)
     assert len(smsa_masked["test"]) == 500
+
+
+def test_tokenize_dataset_lowercase_handling():
+    """Verify lowercase preprocessing option in dataset tokenization."""
+    from datasets import Dataset, DatasetDict
+    from transformers import AutoTokenizer
+    from cuking.data import tokenize_dataset
+
+    # Create dummy dataset
+    raw = DatasetDict({
+        "train": Dataset.from_dict({
+            "text": ["Halo Dunia SEMUA"],
+            "label": [0],
+            "label_text": ["happy"],
+        })
+    })
+
+    # Test with smoke model tokenizer
+    tok = AutoTokenizer.from_pretrained("hf-internal-testing/tiny-random-BertForSequenceClassification")
+
+    tokenized_lower = tokenize_dataset(raw, tok, max_length=16, lowercase=True)
+    assert "input_ids" in tokenized_lower["train"].column_names
+
+    tokenized_orig = tokenize_dataset(raw, tok, max_length=16, lowercase=False)
+    assert "input_ids" in tokenized_orig["train"].column_names
+
+
+def test_indobert_tokenizer_casing():
+    """Verify indobenchmark/indobert-base-p1 casing tokens."""
+    from transformers import AutoTokenizer
+
+    tok = AutoTokenizer.from_pretrained("indobenchmark/indobert-base-p1")
+    tokens = tok.tokenize("Halo Dunia SEMUA")
+    # indobert-base-p1 natively lowercases tokens
+    assert tokens == ["halo", "dunia", "semua"]
+

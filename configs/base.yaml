@@ -12,3 +12,4 @@ fp16: true
 early_stopping_patience: 3
 llrd: false
 llrd_decay: 0.95
+lowercase: null

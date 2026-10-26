@@ -132,9 +132,20 @@ def train_single_run(
         is_smoke=is_smoke,
     )
 
+    # Determine lowercase preprocessing
+    # IndoBERT is trained uncased, whereas XLM-R is cased
+    is_indobert = "indobert" in model_alias.lower()
+    lowercase_cfg = config.get("lowercase")
+    lowercase_flag = is_indobert if lowercase_cfg is None else bool(lowercase_cfg)
+
     # Tokenize dataset
     max_length = int(config.get("max_length", 128))
-    tokenized = tokenize_dataset(raw_dataset, tokenizer, max_length=max_length)
+    tokenized = tokenize_dataset(
+        raw_dataset,
+        tokenizer,
+        max_length=max_length,
+        lowercase=lowercase_flag,
+    )
 
     train_data = tokenized["train"]
     val_data = tokenized["validation"]

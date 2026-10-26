@@ -49,4 +49,17 @@ Setiap keputusan atau penyesuaian dicatat dengan format:
 - Keputusan: Menggunakan model publik ultra-ringan `hf-internal-testing/tiny-random-BertForSequenceClassification` untuk mode `--smoke`. Model ini memiliki arsitektur bert sequence classification riil dengan bobot sangat kecil (< 100 KB) dan 2 layer, sehingga proses tokenisasi, 3 step optimasi AdamW, serta inferensi logits valid dan test selesai dalam waktu sekitar 1 detik di CPU.
 - Dampak: Smoke test lokal berjalan super cepat, deterministik, dan memverifikasi seluruh komponen pipeline (data, model, trainer, logits, dan penyimpanan metrik) tanpa membebani memori dan CPU laptop.
 
+### DEC-004: Tokenizer Casing and Lowercase Preprocessing for IndoBERT
+- Tanggal: 2026-10-26
+- Konteks: Verifikasi perilaku casing tokenizer `indobenchmark/indobert-base-p1` pada input "Halo Dunia SEMUA" sesuai instruksi verifikasi pra-Kaggle.
+- Temuan Lapangan:
+  1. Tokenizer `indobenchmark/indobert-base-p1` memiliki konfigurasi bawaan `do_lower_case: True`. Hasil tokenisasi "Halo Dunia SEMUA" secara otomatis menghasilkan token berhuruf kecil: `['halo', 'dunia', 'semua']` dengan token ID `[2, 9302, 594, 366, 3]`.
+  2. Sebagai perbandingan, tokenizer `xlm-roberta-base` mempertahankan casing asli: `[' Halo', ' Dunia', ' SEM', 'UA']` dengan `do_lower_case: None`.
+- Keputusan:
+  1. Menambahkan parameter `lowercase: bool = False` pada fungsi `tokenize_dataset` di `src/cuking/data.py` untuk mengontrol konversi teks secara eksplisit.
+  2. Pada `src/cuking/train.py`, menerapkan auto-detection: bila model mengandung string "indobert", flag lowercase aktif secara default (kecuali dioverride manual via config), sedangkan model XLM-R tetap mempertahankan casing asli.
+  3. Menambahkan opsi `lowercase: null` di `configs/base.yaml` sebagai titik konfigurasi eksplisit.
+- Dampak: Penanganan casing menjadi deterministik dan aman dari perbedaan perilaku antar tokenizer di Hugging Face.
+
+
 

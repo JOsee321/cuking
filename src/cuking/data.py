@@ -127,11 +127,23 @@ def tokenize_dataset(
     tokenizer,
     max_length: int = 128,
     text_column: str = "text",
+    lowercase: bool = False,
 ) -> DatasetDict:
-    """Tokenize text column in a DatasetDict for classification."""
+    """Tokenize text column in a DatasetDict for classification.
+
+    Args:
+        dataset: Hugging Face DatasetDict with text column.
+        tokenizer: PreTrainedTokenizer instance.
+        max_length: Maximum sequence length.
+        text_column: Name of text field in dataset.
+        lowercase: If True, explicitly convert text to lowercase before tokenization.
+    """
     def _tokenize_fn(examples):
+        texts = examples[text_column]
+        if lowercase:
+            texts = [t.lower() for t in texts]
         return tokenizer(
-            examples[text_column],
+            texts,
             truncation=True,
             max_length=max_length,
         )
