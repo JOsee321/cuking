@@ -284,29 +284,37 @@ def train_single_run(
 
     logger.info(f"Starting training run: task={task_key}, model={model_alias}, lr={run_lr}, seed={run_seed}")
     start_time = time.time()
-    train_result = trainer.train()
-    train_time_s = time.time() - start_time
+    try:
+        train_result = trainer.train()
+        train_time_s = time.time() - start_time
 
-    # Generate validation logits and compute final metrics
-    logger.info("Computing validation predictions and logits...")
-    val_output = trainer.predict(val_data)
-    valid_logits = val_output.predictions
-    if isinstance(valid_logits, tuple):
-        valid_logits = valid_logits[0]
-    val_metrics = compute_classification_metrics(valid_logits, val_output.label_ids)
+        # Generate validation logits and compute final metrics
+        logger.info("Computing validation predictions and logits...")
+        val_output = trainer.predict(val_data)
+        valid_logits = val_output.predictions
+        if isinstance(valid_logits, tuple):
+            valid_logits = valid_logits[0]
+        val_metrics = compute_classification_metrics(valid_logits, val_output.label_ids)
 
-    # Generate test logits
-    logger.info("Computing test predictions and logits...")
-    test_output = trainer.predict(test_data)
-    test_logits = test_output.predictions
-    if isinstance(test_logits, tuple):
-        test_logits = test_logits[0]
+        # Generate test logits
+        logger.info("Computing test predictions and logits...")
+        test_output = trainer.predict(test_data)
+        test_logits = test_output.predictions
+        if isinstance(test_logits, tuple):
+            test_logits = test_logits[0]
 
-    # Clean up temporary training checkpoints to save disk space
-    if temp_ckpt_dir.exists():
-        shutil.rmtree(temp_ckpt_dir, ignore_errors=True)
+        best_epoch = extract_best_epoch(trainer)
+    finally:
+        # Clean up temporary training checkpoints to ensure zero lingering checkpoint disk usage
+        if temp_ckpt_dir.exists():
+            shutil.rmtree(temp_ckpt_dir, ignore_errors=True)
+        # Also clean up any accidental checkpoint directories in run_dir
+        for ckpt_folder in run_dir.glob("checkpoint-*"):
+            if ckpt_folder.is_dir():
+                shutil.rmtree(ckpt_folder, ignore_errors=True)
 
-    # Persist outputs in accordance with PRD section 9.3
+    # Persist outputs in accordance with PRD section 9.3:
+    # Only metrics.json, config.yaml, valid_logits.npy, test_logits.npy are retained
     np.save(run_dir / "valid_logits.npy", valid_logits)
     np.save(run_dir / "test_logits.npy", test_logits)
 
@@ -317,7 +325,7 @@ def train_single_run(
         "seed": run_seed,
         "valid_macro_f1": float(val_metrics["macro_f1"]),
         "valid_acc": float(val_metrics["accuracy"]),
-        "best_epoch": extract_best_epoch(trainer),
+        "best_epoch": best_epoch,
         "train_time_s": round(train_time_s, 2),
         "smoke": is_smoke,
     }
