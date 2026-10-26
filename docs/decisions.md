@@ -88,6 +88,18 @@ Setiap keputusan atau penyesuaian dicatat dengan format:
 - Keputusan: Mencatat temuan ini secara transparan dalam dokumentasi teknis. Pipeline tetap memuat data dari file resmi repositori IndoBenchmark apa adanya tanpa manipulasi baris.
 - Dampak: Integritas data terjamin dan perbedaan 2 baris pada EmoT terdokumentasi dengan jelas.
 
+### DEC-007: Phase 1 EmoT Run Artifact Status
+- Tanggal: 2026-10-26
+- Konteks: Run baseline EmoT `indobert-base_lr2e-05_s42` pada Phase 1 berasal dari eksekusi Kaggle pertama sebelum perbaikan pelaporan `best_epoch` dan explicit label maps diterapkan.
+- Keputusan:
+  1. File `metrics.json` untuk EmoT TIDAK diedit secara manual demi mempertahankan orisinalitas artefak dari runtime Kaggle.
+  2. Nilai `best_epoch` di `metrics.json` run EmoT ini tercatat 3.0 (kebetulan sesuai log training di mana early stopping berhenti pada epoch 3, namun dihasilkan oleh logika lama).
+  3. Konfigurasi label map pada run ini menggunakan mapping bawaan lama.
+  4. Nilai metrik validasi (valid_macro_f1: 0.7320) dan logits (valid_logits.npy dan test_logits.npy) tetap valid untuk analisis awal.
+  5. Run baseline ini akan digantikan oleh run baru yang sepenuhnya bersih pada saat sweep Phase 2 dijalankan.
+- Dampak: Dokumentasi jujur dan transparan sesuai etika riset, artefak Phase 1 tetap utuh tanpa modifikasi retrospektif.
+
+
 
 
 
