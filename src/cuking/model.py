@@ -52,19 +52,20 @@ def build_model_and_tokenizer(
 
     tokenizer = AutoTokenizer.from_pretrained(model_id, token=token)
 
-    config_kwargs = {}
-    if id2label is not None:
-        config_kwargs["id2label"] = id2label
-    if label2id is not None:
-        config_kwargs["label2id"] = label2id
-
-    config = AutoConfig.from_pretrained(
-        model_id,
-        num_labels=num_labels,
-        token=token,
-        **config_kwargs,
-    )
+    # Load base config without kwargs to avoid length-mismatch warnings
+    # with IndoBERT's default pre-trained config (which defaults to 5 labels).
+    config = AutoConfig.from_pretrained(model_id, token=token)
     config.num_labels = num_labels
+
+    if id2label is not None:
+        config.id2label = {int(k): str(v) for k, v in id2label.items()}
+    else:
+        config.id2label = {i: f"LABEL_{i}" for i in range(num_labels)}
+
+    if label2id is not None:
+        config.label2id = {str(k): int(v) for k, v in label2id.items()}
+    else:
+        config.label2id = {v: k for k, v in config.id2label.items()}
 
     model = AutoModelForSequenceClassification.from_pretrained(
         model_id,
