@@ -72,11 +72,31 @@ def aggregate_results(
     return df
 
 
+def print_top_rankings(df: pd.DataFrame) -> None:
+    """Print leaderboard rankings per task based on validation macro-F1."""
+    if df.empty or "task" not in df.columns:
+        print("No results to rank.")
+        return
+
+    print("\n" + "=" * 76)
+    print("TOP RANKINGS PER TASK (Ranked by Validation Macro-F1)")
+    print("=" * 76)
+
+    for task_name, group in df.groupby("task", sort=False):
+        sorted_group = group.sort_values(by="valid_macro_f1", ascending=False).reset_index(drop=True)
+        sorted_group.index = sorted_group.index + 1
+        print(f"\n[Task: {task_name.upper()}]")
+        cols = [c for c in ["model", "lr", "seed", "valid_macro_f1", "valid_acc", "best_epoch", "train_time_s"] if c in sorted_group.columns]
+        print(sorted_group[cols].to_string())
+    print("\n" + "=" * 76)
+
+
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Aggregate experiment metrics.json files into summary.csv")
     parser.add_argument("--experiments-dir", type=str, default="results/experiments", help="Path to experiments folder")
     parser.add_argument("--output-csv", type=str, default="results/summary.csv", help="Path to output summary CSV")
+    parser.add_argument("--top", action="store_true", help="Print top-ranked runs per task based on validation macro-F1")
     return parser.parse_args()
 
 
@@ -87,7 +107,10 @@ if __name__ == "__main__":
         output_csv=args.output_csv,
     )
     if not summary_df.empty:
-        print("\n=== Experiment Results Summary ===")
-        print(summary_df.to_string(index=False))
+        if args.top:
+            print_top_rankings(summary_df)
+        else:
+            print("\n=== Experiment Results Summary ===")
+            print(summary_df.to_string(index=False))
     else:
         print("No results found.")
