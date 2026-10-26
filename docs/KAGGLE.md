@@ -109,9 +109,21 @@ print("File arsip berhasil dibuat di: /kaggle/working/cuking_phase1_results.zip"
 
 ---
 
-## Sel 6: Unduh dan Sinkronisasi ke Repo Lokal
+## Sel 6: Unduh File Hasil Langsung dari Notebook
 
-1. Unduh file `cuking_phase1_results.zip` melalui panel output Kaggle (Data Explorer > Output).
+**UNDUH ZIP SEBELUM STOP SESSION, file di /kaggle/working hilang saat sesi berhenti**
+
+```python
+# Sel 6: Tampilkan tautan unduh langsung di notebook browser
+from IPython.display import FileLink
+FileLink('/kaggle/working/cuking_phase1_results.zip')
+```
+
+---
+
+## Langkah Lanjutan: Sinkronisasi ke Repo Lokal
+
+1. Klik tautan hasil Sel 6 untuk mengunduh `cuking_phase1_results.zip` langsung ke komputer lokal (atau unduh via panel output Kaggle: Data Explorer > Output).
 2. Di laptop lokal, ekstrak isi zip ke folder root repositori `cuking/` sehingga folder `results/experiments/` terisi hasil run Kaggle:
    ```bash
    # Di root repo lokal:
