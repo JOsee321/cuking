@@ -1,5 +1,6 @@
 # Data and raw files (Rule 3)
 data/
+PRD.md
 
 # Model checkpoints and weights (Rule 3)
 checkpoints/
