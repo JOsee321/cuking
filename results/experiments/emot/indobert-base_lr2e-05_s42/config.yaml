@@ -1,0 +1,24 @@
+seed: 42
+max_length: 128
+per_device_train_batch_size: 8
+gradient_accumulation_steps: 2
+per_device_eval_batch_size: 32
+learning_rate: 2.0e-05
+num_train_epochs: 8
+warmup_ratio: 0.1
+weight_decay: 0.01
+fp16: true
+early_stopping_patience: 3
+llrd: false
+llrd_decay: 0.95
+lowercase: null
+task: emot
+task_type: sequence_classification
+num_labels: 5
+labels:
+- sadness
+- anger
+- love
+- fear
+- happy
+metric: macro_f1

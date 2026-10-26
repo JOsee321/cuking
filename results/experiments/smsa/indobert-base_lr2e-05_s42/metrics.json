@@ -1,0 +1,11 @@
+{
+  "task": "smsa",
+  "model": "indobert-base",
+  "lr": 2e-05,
+  "seed": 42,
+  "valid_macro_f1": 0.9238782652168478,
+  "valid_acc": 0.9452380952380952,
+  "best_epoch": 6.0,
+  "train_time_s": 616.93,
+  "smoke": false
+}
