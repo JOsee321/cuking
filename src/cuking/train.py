@@ -4,6 +4,7 @@ import argparse
 import inspect
 import os
 from pathlib import Path
+import re
 import shutil
 import time
 from typing import Any, Dict, Optional
@@ -26,6 +27,43 @@ from cuking.utils import load_yaml, save_json, save_yaml, set_seed, setup_logger
 
 
 logger = setup_logger("cuking.train")
+
+
+def extract_best_epoch(trainer: Any) -> float:
+    """Extract the epoch corresponding to the best checkpoint/metric from TrainerState."""
+    state = getattr(trainer, "state", None)
+    if state is None:
+        return 0.0
+
+    best_ckpt = getattr(state, "best_model_checkpoint", None)
+    log_history = getattr(state, "log_history", []) or []
+
+    best_step = None
+    if best_ckpt:
+        match = re.search(r"checkpoint-(\d+)", str(best_ckpt))
+        if match:
+            best_step = int(match.group(1))
+
+    if best_step is None:
+        best_step = getattr(state, "best_global_step", None)
+
+    # 1. Match by global step in log_history
+    if best_step is not None:
+        for entry in log_history:
+            if entry.get("step") == best_step and "epoch" in entry:
+                return float(entry["epoch"])
+
+    # 2. Match by best_metric in log_history
+    best_metric = getattr(state, "best_metric", None)
+    if best_metric is not None:
+        for entry in reversed(log_history):
+            for k, v in entry.items():
+                if (k.startswith("eval_") or k in ("macro_f1", "eval_macro_f1")) and isinstance(v, (int, float)):
+                    if abs(v - best_metric) < 1e-6 and "epoch" in entry:
+                        return float(entry["epoch"])
+
+    # 3. Fallback to final state.epoch
+    return float(getattr(state, "epoch", 0.0) or 0.0)
 
 
 def parse_args() -> argparse.Namespace:
@@ -279,7 +317,7 @@ def train_single_run(
         "seed": run_seed,
         "valid_macro_f1": float(val_metrics["macro_f1"]),
         "valid_acc": float(val_metrics["accuracy"]),
-        "best_epoch": float(trainer.state.epoch or 0.0),
+        "best_epoch": extract_best_epoch(trainer),
         "train_time_s": round(train_time_s, 2),
         "smoke": is_smoke,
     }
