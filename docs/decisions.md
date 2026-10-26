@@ -61,5 +61,18 @@ Setiap keputusan atau penyesuaian dicatat dengan format:
   3. Menambahkan opsi `lowercase: null` di `configs/base.yaml` sebagai titik konfigurasi eksplisit.
 - Dampak: Penanganan casing menjadi deterministik dan aman dari perbedaan perilaku antar tokenizer di Hugging Face.
 
+### DEC-005: Audit and Documentation of Test Split Usage
+- Tanggal: 2026-10-26
+- Konteks: Audit verifikasi pemuatan split "test" pada `data.py` dan `train.py` untuk menjamin tidak ada data leakage atau tuning berbasis test set.
+- File yang Dimuat sebagai Split Test:
+  1. EmoT: `data/emot_emotion-twitter/test_preprocess.csv` (atau `test_preprocess_masked_label.csv` bila opsi `use_masked_test=True`).
+  2. SmSA: `data/smsa_doc-sentiment-prosa/test_preprocess.tsv` (atau `test_preprocess_masked_label.tsv` bila opsi `use_masked_test=True`).
+- Konfirmasi Integritas Evaluasi:
+  1. Early stopping (`EarlyStoppingCallback`) dan seleksi model terbaik (`load_best_model_at_end=True`, `metric_for_best_model="macro_f1"`) pada Hugging Face Trainer murni hanya mengevaluasi `eval_dataset=val_data`.
+  2. Split test TIDAK PERNAH digunakan dalam loop training, pemilihan epoch terbaik, penyetelan hyperparameter, maupun pemilihan arsitektur.
+  3. Split test hanya dieksekusi satu kali di akhir via `trainer.predict(test_data)` untuk mengekstrak `test_logits.npy` demi keperluan pembuatan submission CodaLab dan ensemble.
+- Dampak: Pipeline terverifikasi 100% bersih dari test-set leakage, sesuai Aturan Agent nomor 6.
+
+
 
 
