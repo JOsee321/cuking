@@ -52,19 +52,25 @@ def build_model_and_tokenizer(
 
     tokenizer = AutoTokenizer.from_pretrained(model_id, token=token)
 
+    config_kwargs = {}
+    if id2label is not None:
+        config_kwargs["id2label"] = id2label
+    if label2id is not None:
+        config_kwargs["label2id"] = label2id
+
     config = AutoConfig.from_pretrained(
         model_id,
         num_labels=num_labels,
-        id2label=id2label,
-        label2id=label2id,
         token=token,
+        **config_kwargs,
     )
+    config.num_labels = num_labels
 
     model = AutoModelForSequenceClassification.from_pretrained(
         model_id,
         config=config,
         token=token,
-        ignore_mismatched_sizes=True,
+        ignore_mismatched_sizes=is_smoke,
     )
 
     return model, tokenizer
