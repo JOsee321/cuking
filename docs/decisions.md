@@ -43,3 +43,10 @@ Setiap keputusan atau penyesuaian dicatat dengan format:
 - Keputusan: Loader `load_task` di `src/cuking/data.py` membaca format file sesuai karakteristik nyata di atas (CSV berkoma untuk EmoT, TSV bertab tanpa header untuk SmSA), menstandarkan nama kolom menjadi `text` dan `label`, serta mengunduh secara idempoten dari raw GitHub IndoNLU ke folder lokal `data/`.
 - Dampak: Dataset termuat secara presisi dan konsisten ke dalam DatasetDict Hugging Face.
 
+### DEC-003: Lightweight Model Selection for Smoke Testing Mode
+- Tanggal: 2026-10-26
+- Konteks: Laptop lokal menggunakan prosesor Core i3 tanpa GPU diskrit. Mode verifikasi `--smoke` disyaratkan selesai dalam waktu di bawah 5 menit di CPU tanpa menjalankan training penuh.
+- Keputusan: Menggunakan model publik ultra-ringan `hf-internal-testing/tiny-random-BertForSequenceClassification` untuk mode `--smoke`. Model ini memiliki arsitektur bert sequence classification riil dengan bobot sangat kecil (< 100 KB) dan 2 layer, sehingga proses tokenisasi, 3 step optimasi AdamW, serta inferensi logits valid dan test selesai dalam waktu sekitar 1 detik di CPU.
+- Dampak: Smoke test lokal berjalan super cepat, deterministik, dan memverifikasi seluruh komponen pipeline (data, model, trainer, logits, dan penyimpanan metrik) tanpa membebani memori dan CPU laptop.
+
+
