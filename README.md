@@ -27,7 +27,14 @@ Evaluasi dilakukan murni pada benchmark resmi IndoNLU (arXiv:2009.05387):
 3. **NERGrit** (`nergrit_ner-grit`): Named Entity Recognition - Metrik: Entity F1 (`seqeval`).
 4. **NERP** (`nerp_ner-prosa`): Named Entity Recognition - Metrik: Entity F1 (`seqeval`).
 
-Semua perbandingan model diputuskan berdasarkan validation set. Prediksi test set dievaluasi melalui leaderboard resmi CodaLab.
+### Aturan Wajib Evaluasi Split Test (REPORT ONLY)
+Skor test hanya digunakan untuk laporan akhir. **DILARANG** dipakai untuk:
+- Memilih model terbaik
+- Menyetel hyperparameter atau arsitektur
+- Menentukan early stopping
+- Memilih anggota ensemble
+
+Semua seleksi model dan penentuan ensemble WAJIB menggunakan evaluasi validation split. Setiap kali evaluasi test split dijalankan (`python -m cuking.evaluate --split test`), sistem mencetak peringatan tegas `[WARNING: REPORT ONLY]`.
 
 ---
 

@@ -99,6 +99,18 @@ Setiap keputusan atau penyesuaian dicatat dengan format:
   5. Run baseline ini akan digantikan oleh run baru yang sepenuhnya bersih pada saat sweep Phase 2 dijalankan.
 - Dampak: Dokumentasi jujur dan transparan sesuai etika riset, artefak Phase 1 tetap utuh tanpa modifikasi retrospektif.
 
+### DEC-008: Protocol for Report-Only Test Evaluation Module
+- Tanggal: 2026-10-26
+- Konteks: Penambahan modul evaluasi mandiri `cuking.evaluate` untuk mengukur performa prediksi `test_logits.npy` terhadap ground truth label asli pada split test IndoNLU.
+- Aturan Wajib Riset:
+  1. Skor split test semata-mata digunakan untuk laporan akhir (final reporting).
+  2. DILARANG KERAS menggunakan metrik split test untuk memilih model terbaik, menyetel hyperparameter, early stopping, maupun memilih model anggota ensemble.
+  3. Seluruh pemilihan model, hyperparameter, dan perancangan ensemble WAJIB bersandar murni pada split validation.
+  4. Setiap eksekusi evaluasi split test (`python -m cuking.evaluate --split test`) mencetak peringatan tegas "[WARNING: REPORT ONLY]" pada terminal output dan logger.
+  5. Integritas baris diverifikasi ketat: jumlah baris pada `test_logits.npy` wajib sama persis dengan jumlah baris ground truth test label asli.
+- Dampak: Bebas dari risiko data leakage dan p-hacking, menjaga kepatuhan penuh pada Aturan Agent nomor 6.
+
+
 
 
 
