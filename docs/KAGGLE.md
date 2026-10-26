@@ -23,12 +23,6 @@ Sebelum menjalankan sel di bawah, pastikan konfigurasi notebook Kaggle sudah dia
 # Install paket tambahan khusus runtime Kaggle
 !pip install -r requirements-kaggle.txt --quiet
 !pip install -e . --quiet
-
-import torch
-print(f"PyTorch version: {torch.__version__}")
-print(f"CUDA available: {torch.cuda.is_available()}")
-if torch.cuda.is_available():
-    print(f"Device name: {torch.cuda.get_device_name(0)}")
 ```
 
 ---
@@ -45,6 +39,33 @@ try:
     print("HF_TOKEN berhasil dimuat dari Kaggle Secrets.")
 except Exception as e:
     print(f"Catatan: HF_TOKEN tidak ditemukan di Secrets ({e}). Berjalan dalam mode unauthenticated.")
+```
+
+---
+
+## Sel 0: Preflight Check (Verifikasi Library dan Smoke Test)
+
+> **ATURAN WAJIB**: Run training DILARANG DILANJUTKAN bila Sel 0 ini gagal!
+
+```python
+# Sel 0: Preflight verification sebelum training dimulai
+import torch
+import transformers
+import datasets
+import accelerate
+import evaluate
+
+print("=== Preflight Library Versions ===")
+print(f"PyTorch      : {torch.__version__} (CUDA: {torch.cuda.is_available()})")
+if torch.cuda.is_available():
+    print(f"GPU Device   : {torch.cuda.get_device_name(0)}")
+print(f"Transformers : {transformers.__version__}")
+print(f"Datasets     : {datasets.__version__}")
+print(f"Accelerate   : {accelerate.__version__}")
+print(f"Evaluate     : {evaluate.__version__}")
+
+print("\n=== Menjalankan Smoke Test Preflight ===")
+!python -m pytest tests/test_smoke.py -q
 ```
 
 ---
