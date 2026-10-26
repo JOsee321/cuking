@@ -1,0 +1,18 @@
+# Cuking dependencies
+# Core Deep Learning and NLP
+torch>=2.2.0
+transformers==4.46.3
+datasets==3.1.0
+accelerate==1.1.1
+evaluate==0.4.3
+seqeval==1.2.2
+
+# Data and Utilities
+scikit-learn>=1.5.0
+numpy>=1.26.0
+pandas>=2.2.0
+pyyaml==6.0.2
+huggingface_hub==0.26.2
+
+# Testing and Development
+pytest>=8.3.0

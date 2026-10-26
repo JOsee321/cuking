@@ -1,0 +1,52 @@
+# Data and raw files (Rule 3)
+data/
+
+# Model checkpoints and weights (Rule 3)
+checkpoints/
+runs/
+*.pt
+*.bin
+*.safetensors
+
+# Environment variables, credentials, and secrets (Rule 3 & 5)
+.env
+*.env
+*.token
+
+# Python bytecode and build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Testing and cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
