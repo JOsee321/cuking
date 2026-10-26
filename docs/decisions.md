@@ -73,6 +73,22 @@ Setiap keputusan atau penyesuaian dicatat dengan format:
   3. Split test hanya dieksekusi satu kali di akhir via `trainer.predict(test_data)` untuk mengekstrak `test_logits.npy` demi keperluan pembuatan submission CodaLab dan ensemble.
 - Dampak: Pipeline terverifikasi 100% bersih dari test-set leakage, sesuai Aturan Agent nomor 6.
 
+### DEC-006: Verification of Test Split Sizes and Ground Truth vs Masked Files
+- Tanggal: 2026-10-26
+- Konteks: Penghitungan jumlah baris file split test EmoT dan SmSA (baik file berlabel asli maupun masked dummy), serta perbandingannya dengan angka yang dilaporkan di paper IndoNLU (Table 1: EmoT 442, SmSA 500).
+- Temuan Lapangan:
+  1. EmoT (`data/emot_emotion-twitter/`):
+     - `test_preprocess.csv`: Total 441 baris teks (1 baris header `label,tweet` + 440 baris data). Berisi ground truth asli (distribusi label: anger 110, happy 101, sadness 100, fear 65, love 64).
+     - `test_preprocess_masked_label.csv`: Total 441 baris teks (1 baris header + 440 baris data). Berisi masked dummy label (seluruh 440 baris diisi `"happy"`).
+     - Perbandingan dengan paper IndoNLU: Paper mencatat ukuran test split EmoT sebesar 442 sampel, sedangkan file di repositori IndoBenchmark memuat 440 baris data (selisih 2 baris lebih sedikit dibanding angka di tabel paper).
+  2. SmSA (`data/smsa_doc-sentiment-prosa/`):
+     - `test_preprocess.tsv`: Total 500 baris teks (format TSV tanpa baris header = 500 baris data). Berisi ground truth asli (distribusi label: positive 208, negative 204, neutral 88).
+     - `test_preprocess_masked_label.tsv`: Total 500 baris teks (format TSV tanpa baris header = 500 baris data). Berisi masked dummy label (seluruh 500 baris diisi `"neutral"`).
+     - Perbandingan dengan paper IndoNLU: Paper mencatat ukuran test split SmSA sebesar 500 sampel, persis sama dengan jumlah 500 baris data pada file repositori.
+- Keputusan: Mencatat temuan ini secara transparan dalam dokumentasi teknis. Pipeline tetap memuat data dari file resmi repositori IndoBenchmark apa adanya tanpa manipulasi baris.
+- Dampak: Integritas data terjamin dan perbedaan 2 baris pada EmoT terdokumentasi dengan jelas.
+
+
 
 
 
