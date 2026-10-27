@@ -1,6 +1,9 @@
 """Model and tokenizer builder with alias resolution for IndoNLU benchmarks."""
 
-from typing import Dict, Optional, Tuple
+import re
+from typing import Any, Dict, List, Optional, Tuple
+import torch
+import torch.nn as nn
 from transformers import (
     AutoConfig,
     AutoModelForSequenceClassification,
@@ -75,3 +78,94 @@ def build_model_and_tokenizer(
     )
 
     return model, tokenizer
+
+
+def build_llrd_param_groups(
+    model: nn.Module,
+    base_lr: float,
+    decay: float = 0.95,
+    weight_decay: float = 0.01,
+) -> List[Dict[str, Any]]:
+    """Build layer-wise learning rate decay (LLRD) parameter groups for BERT / XLM-R models.
+
+    Embeddings receive the smallest learning rate: base_lr * (decay ** num_layers).
+    The i-th encoder layer (1-indexed, i=1..num_layers) receives:
+        base_lr * (decay ** (num_layers - i))
+    The classification head receives:
+        base_lr
+    Bias and LayerNorm parameters have weight_decay = 0.0.
+
+    Args:
+        model: PyTorch model (BERT or XLM-R / RoBERTa).
+        base_lr: Base learning rate for classification head.
+        decay: Multiplicative decay factor per layer (e.g. 0.95).
+        weight_decay: L2 regularization factor for weight parameters.
+
+    Returns:
+        List of parameter group dictionaries compatible with PyTorch optimizers.
+    """
+    # 1. Determine number of hidden layers in encoder
+    num_layers = None
+    if hasattr(model, "config") and hasattr(model.config, "num_hidden_layers"):
+        num_layers = int(model.config.num_hidden_layers)
+    else:
+        max_layer = -1
+        for name, _ in model.named_parameters():
+            match = re.search(r"encoder\.layer\.(\d+)\.", name)
+            if match:
+                max_layer = max(max_layer, int(match.group(1)))
+        num_layers = max_layer + 1 if max_layer >= 0 else 1
+
+    levels: Dict[int, Dict[str, List[torch.nn.Parameter]]] = {}
+
+    # 2. Assign parameters to levels
+    for name, param in model.named_parameters():
+        if not param.requires_grad:
+            continue
+
+        if "embeddings" in name:
+            level = 0
+        else:
+            match = re.search(r"encoder\.layer\.(\d+)\.", name)
+            if match:
+                layer_idx = int(match.group(1))  # 0 to num_layers - 1
+                level = layer_idx + 1             # 1 to num_layers
+            else:
+                level = num_layers + 1           # Classification head
+
+        name_lower = name.lower()
+        is_no_decay = ("bias" in name_lower) or ("layernorm" in name_lower) or ("layer_norm" in name_lower)
+
+        if level not in levels:
+            levels[level] = {"decay": [], "nodecay": []}
+
+        if is_no_decay:
+            levels[level]["nodecay"].append(param)
+        else:
+            levels[level]["decay"].append(param)
+
+    # 3. Build ordered parameter groups
+    param_groups: List[Dict[str, Any]] = []
+    for lvl in sorted(levels.keys()):
+        if lvl == 0:
+            lr = base_lr * (decay ** num_layers)
+        elif lvl <= num_layers:
+            # i = lvl (1-indexed layer)
+            lr = base_lr * (decay ** (num_layers - lvl))
+        else:
+            lr = base_lr
+
+        if levels[lvl]["decay"]:
+            param_groups.append({
+                "params": levels[lvl]["decay"],
+                "lr": lr,
+                "weight_decay": weight_decay,
+            })
+        if levels[lvl]["nodecay"]:
+            param_groups.append({
+                "params": levels[lvl]["nodecay"],
+                "lr": lr,
+                "weight_decay": 0.0,
+            })
+
+    return param_groups

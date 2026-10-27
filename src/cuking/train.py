@@ -56,6 +56,37 @@ class NaNGuardCallback(TrainerCallback):
             control.should_training_stop = True
 
 
+class CukingTrainer(Trainer):
+    """Custom Trainer subclass with support for Layer-wise Learning Rate Decay (LLRD)."""
+
+    def __init__(self, *args, llrd: bool = False, llrd_decay: float = 0.95, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.llrd = llrd
+        self.llrd_decay = llrd_decay
+
+    def create_optimizer(self):
+        """Create optimizer with LLRD parameter groups if enabled."""
+        if self.optimizer is None and self.llrd:
+            from cuking.model import build_llrd_param_groups
+
+            decay = float(self.llrd_decay)
+            base_lr = float(self.args.learning_rate)
+            weight_decay = float(self.args.weight_decay)
+            param_groups = build_llrd_param_groups(
+                model=self.model,
+                base_lr=base_lr,
+                decay=decay,
+                weight_decay=weight_decay,
+            )
+            adam_kwargs = {
+                "betas": (self.args.adam_beta1, self.args.adam_beta2),
+                "eps": self.args.adam_epsilon,
+            }
+            self.optimizer = torch.optim.AdamW(param_groups, **adam_kwargs)
+            return self.optimizer
+        return super().create_optimizer()
+
+
 def extract_best_epoch(trainer: Any) -> float:
     """Extract the epoch corresponding to the best checkpoint/metric from TrainerState."""
     state = getattr(trainer, "state", None)
@@ -327,7 +358,12 @@ def train_single_run(
         elif "tokenizer" in trainer_sig:
             trainer_kwargs["tokenizer"] = tokenizer
 
-        trainer = Trainer(**trainer_kwargs)
+        use_llrd = bool(config.get("llrd", False))
+        llrd_decay_val = float(config.get("llrd_decay", 0.95))
+        trainer_kwargs["llrd"] = use_llrd
+        trainer_kwargs["llrd_decay"] = llrd_decay_val
+
+        trainer = CukingTrainer(**trainer_kwargs)
 
         logger.info(
             f"Starting training run (attempt {attempt + 1}): task={task_key}, model={model_alias}, "
