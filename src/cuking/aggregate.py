@@ -39,7 +39,15 @@ def aggregate_results(
         try:
             data = load_json(mf)
             # Add relative folder path for traceability
-            data["run_dir"] = str(mf.parent.relative_to(exp_path))
+            rel_dir = str(mf.parent.relative_to(exp_path))
+            data["run_dir"] = rel_dir
+            # Mark ensemble runs
+            is_ens = (
+                mf.parent.name.startswith("ensemble_")
+                or "ensemble" in str(data.get("strategy", "")).lower()
+                or bool(data.get("members"))
+            )
+            data["is_ensemble"] = bool(is_ens)
             records.append(data)
         except Exception as e:
             logger.error(f"Error loading {mf}: {e}")
@@ -48,12 +56,15 @@ def aggregate_results(
         logger.info(f"No metrics.json files found in '{experiments_dir}'.")
         df = pd.DataFrame(columns=[
             "task", "model", "lr", "seed", "valid_macro_f1",
-            "valid_acc", "best_epoch", "train_time_s", "smoke", "run_dir",
+            "valid_acc", "best_epoch", "train_time_s", "is_ensemble", "smoke", "run_dir",
         ])
     else:
         df = pd.DataFrame(records)
         # Ensure column ordering
-        primary_cols = ["task", "model", "lr", "seed", "valid_macro_f1", "valid_acc", "best_epoch", "train_time_s"]
+        primary_cols = [
+            "task", "model", "lr", "seed", "valid_macro_f1",
+            "valid_acc", "best_epoch", "train_time_s", "is_ensemble", "run_dir",
+        ]
         other_cols = [c for c in df.columns if c not in primary_cols]
         ordered_cols = [c for c in primary_cols if c in df.columns] + other_cols
         df = df[ordered_cols]
