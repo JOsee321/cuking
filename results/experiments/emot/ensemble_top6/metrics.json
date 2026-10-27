@@ -1,0 +1,18 @@
+{
+  "task": "emot",
+  "model": "ensemble_top6",
+  "name": "top6",
+  "strategy": "topk",
+  "k": 6,
+  "members": [
+    "emot/xlmr-large_lr2e-05_s42",
+    "emot/xlmr-large_lr5e-06_s42",
+    "emot/xlmr-large_lr1e-05_s42",
+    "emot/indobert-large_lr2e-05_s42",
+    "emot/indobert-large_lr4e-05_s42",
+    "emot/indobert-large_lr3e-05_s42"
+  ],
+  "valid_macro_f1": 0.8167839855083358,
+  "valid_acc": 0.8113636363636364,
+  "is_ensemble": true
+}

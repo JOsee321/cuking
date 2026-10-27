@@ -1,0 +1,15 @@
+{
+  "task": "emot",
+  "model": "ensemble_top3",
+  "name": "top3",
+  "strategy": "topk",
+  "k": 3,
+  "members": [
+    "emot/xlmr-large_lr2e-05_s42",
+    "emot/xlmr-large_lr5e-06_s42",
+    "emot/xlmr-large_lr1e-05_s42"
+  ],
+  "valid_macro_f1": 0.7955314566834286,
+  "valid_acc": 0.7909090909090909,
+  "is_ensemble": true
+}
