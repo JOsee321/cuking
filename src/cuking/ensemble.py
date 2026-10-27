@@ -170,7 +170,7 @@ def run_ensemble(
         test_probs_list.append(softmax(tl, axis=-1))
 
         try:
-            rel_name = str(m_path.relative_to(exp_path))
+            rel_name = str(m_path.relative_to(exp_path)).replace("\\", "/")
         except ValueError:
             rel_name = m_path.name
         member_rel_names.append(rel_name)
