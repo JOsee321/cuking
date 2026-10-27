@@ -122,6 +122,30 @@ Setiap keputusan atau penyesuaian dicatat dengan format:
   2. Menambahkan penanganan `OutOfMemoryError` dengan pembersihan memori CUDA dan pengulangan satu kali dengan batch 4 dan accumulation 4, mencatat `"oom_fallback": true` di `metrics.json`.
 - Dampak: Eksekusi sweep model large menjadi stabil dan hemat waktu komputasi GPU Kaggle.
 
+### DEC-010: Phase 2 EmoT Sweep Findings and Runtime Adjustments
+- Tanggal: 2026-10-27
+- Konteks: Analisis hasil hyperparameter sweep model large (`xlmr-large` dan `indobert-large`) pada benchmark EmoT Phase 2 yang dijalankan di Kaggle.
+- Peringkat Valid Macro-F1 Sweep EmoT (Tanpa Skor Test):
+  1. `xlmr-large` lr=2e-5: valid macro-F1 0.7964 (valid acc: 0.7955, best_epoch: 8.0, waktu: 700.86s)
+  2. `xlmr-large` lr=5e-6: valid macro-F1 0.7923 (valid acc: 0.7864, best_epoch: 8.0, waktu: 704.94s)
+  3. `xlmr-large` lr=1e-5: valid macro-F1 0.7884 (valid acc: 0.7818, best_epoch: 6.0, waktu: 711.40s)
+  4. `indobert-large` lr=2e-5: valid macro-F1 0.7800 (valid acc: 0.7727, best_epoch: 5.0, waktu: 506.10s)
+  5. `indobert-large` lr=4e-5: valid macro-F1 0.7711 (valid acc: 0.7705, best_epoch: 4.0, waktu: 444.94s)
+  6. `indobert-large` lr=3e-5: valid macro-F1 0.7644 (valid acc: 0.7523, best_epoch: 3.0, waktu: 385.36s)
+  *(Baseline Phase 1: `indobert-base` lr=2e-5: valid macro-F1 0.7320, best_epoch: 3.0)*
+- Temuan Utama:
+  1. Selisih performa antar learning rate pada `xlmr-large` sangat tipis (selisih ~0.4 poin persentase antara 2e-5 dan 5e-6, serta ~0.8 poin ke 1e-5). Perbedaan ini berada dalam batas noise statistik validation set yang hanya berukuran 440 sampel (di mana 1 sampel mewakili ~0.23% atau ~0.0023).
+  2. `xlmr-large` mencapai `best_epoch` 8.0 pada lr 2e-5 dan 5e-6, yang mengindikasikan bahwa performa model masih menunjukkan tren kenaikan hingga epoch terakhir tanpa tanda overfitting dini.
+  3. `indobert-large` mengalami overfitting lebih cepat dengan `best_epoch` berada di antara epoch 3 sampai 5, setelah itu performa validasi menurun dan memicu early stopping.
+  4. Seluruh angka metrik di atas dihitung murni pada validation set tanpa menyentuh split test. Namun perlu dicatat bahwa skor validasi ini sedikit optimistis karena penentuan epoch terbaik dan pemilihan learning rate dilakukan pada split yang sama.
+- Penyesuaian Perkiraan Waktu Eksekusi SmSA di Kaggle:
+  Berdasarkan durasi nyata pada runtime Kaggle (EmoT xlmr-large ~11.7 menit, indobert-large ~6.5 hingga 8.5 menit), estimasi waktu untuk task SmSA yang memiliki data lebih besar dikoreksi:
+  - `xlmr-large`: sekitar 45 menit per run.
+  - `indobert-large`: sekitar 30 menit per run.
+  - Total durasi sweep SmSA (6 run): sekitar 4 jam (masih sangat aman dalam batas sesi Kaggle 12 jam).
+- Dampak: Memberikan wawasan empiris untuk perancangan model terbaik, pemilihan bobot ensemble nantinya, dan perencanaan alokasi waktu sesi GPU Kaggle untuk sweep SmSA.
+
+
 
 
 

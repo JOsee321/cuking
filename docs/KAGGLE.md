@@ -146,10 +146,10 @@ Bagian ini memuat panduan lengkap eksekusi hyperparameter sweep Phase 2 untuk mo
 
 ### Perkiraan Waktu Eksekusi
 
-Berdasarkan perbandingan waktu eksekusi:
-- **EmoT (Large model)**: sekitar 8 menit per run (total 6 run: ~48 menit). Sebagai perbandingan, model base membutuhkan sekitar 2,5 menit per run.
-- **SmSA (Large model)**: sekitar 30 menit per run (total 6 run: ~180 menit / 3 jam). Sebagai perbandingan, model base membutuhkan sekitar 10 menit per run.
-- **Total waktu sweep**: sekitar 3,5 hingga 4 jam untuk 12 run keseluruhan (jauh di bawah batas sesi Kaggle 12 jam).
+Berdasarkan waktu nyata eksekusi sweep Phase 2:
+- **EmoT (Large model)**: sekitar 7 hingga 12 menit per run (total 6 run: ~55 menit). Model IndoBERT large membutuhkan sekitar 6.5 sampai 8.5 menit, sedangkan XLM-R large membutuhkan sekitar 11.7 menit per run.
+- **SmSA (Large model)**: xlmr-large sekitar 45 menit per run, indobert-large sekitar 30 menit per run, total sweep SmSA sekitar 4 jam.
+- **Total waktu sweep keseluruhan (EmoT + SmSA)**: sekitar 5 jam (jauh di bawah batas sesi background Kaggle 12 jam).
 
 ---
 
