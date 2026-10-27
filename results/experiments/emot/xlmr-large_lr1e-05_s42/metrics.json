@@ -1,0 +1,12 @@
+{
+  "task": "emot",
+  "model": "xlmr-large",
+  "lr": 1e-05,
+  "seed": 42,
+  "valid_macro_f1": 0.7884346780233855,
+  "valid_acc": 0.7818181818181819,
+  "best_epoch": 6.0,
+  "train_time_s": 711.4,
+  "smoke": false,
+  "oom_fallback": false
+}

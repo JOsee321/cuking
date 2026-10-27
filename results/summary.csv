@@ -1,3 +1,9 @@
-task,model,lr,seed,valid_macro_f1,valid_acc,best_epoch,train_time_s,smoke,run_dir
-emot,indobert-base,2e-05,42,0.7319878215530816,0.725,3.0,152.09,False,emot\indobert-base_lr2e-05_s42
-smsa,indobert-base,2e-05,42,0.9238782652168478,0.9452380952380952,6.0,616.93,False,smsa\indobert-base_lr2e-05_s42
+task,model,lr,seed,valid_macro_f1,valid_acc,best_epoch,train_time_s,smoke,run_dir,oom_fallback
+emot,xlmr-large,2e-05,42,0.7963678342903201,0.7954545454545454,8.0,700.86,False,emot\xlmr-large_lr2e-05_s42,False
+emot,xlmr-large,5e-06,42,0.7922599933651253,0.7863636363636364,8.0,704.94,False,emot\xlmr-large_lr5e-06_s42,False
+emot,xlmr-large,1e-05,42,0.7884346780233855,0.7818181818181819,6.0,711.4,False,emot\xlmr-large_lr1e-05_s42,False
+emot,indobert-large,2e-05,42,0.7800128369055802,0.7727272727272727,5.0,506.1,False,emot\indobert-large_lr2e-05_s42,False
+emot,indobert-large,4e-05,42,0.7710569218817035,0.7704545454545455,4.0,444.94,False,emot\indobert-large_lr4e-05_s42,False
+emot,indobert-large,3e-05,42,0.7644343047905229,0.7522727272727273,3.0,385.36,False,emot\indobert-large_lr3e-05_s42,False
+emot,indobert-base,2e-05,42,0.7319878215530816,0.725,3.0,152.09,False,emot\indobert-base_lr2e-05_s42,
+smsa,indobert-base,2e-05,42,0.9238782652168478,0.9452380952380952,6.0,616.93,False,smsa\indobert-base_lr2e-05_s42,

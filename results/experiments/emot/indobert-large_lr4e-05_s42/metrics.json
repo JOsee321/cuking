@@ -1,0 +1,12 @@
+{
+  "task": "emot",
+  "model": "indobert-large",
+  "lr": 4e-05,
+  "seed": 42,
+  "valid_macro_f1": 0.7710569218817035,
+  "valid_acc": 0.7704545454545455,
+  "best_epoch": 4.0,
+  "train_time_s": 444.94,
+  "smoke": false,
+  "oom_fallback": false
+}
